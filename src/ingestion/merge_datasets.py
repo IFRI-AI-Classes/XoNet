@@ -5,7 +5,8 @@ def merge_fongbe_datasets():
     datasets_config = [
         ("data/v1/BibleFongbeFrench.csv", 0, 1),
         ("data/v1/Fongbe_French_Parallel_Dataset1.csv", 0, 1),
-        ("data/v1/French_to_fongbe.csv", 0, 1)
+        ("data/v1/French_to_fongbe.csv", 0, 1),
+        ("data/v1/French_Fongbe_dataset3.csv", 1, 0)
     ]
     
     # Utilisation d'un set (ensemble) pour stocker les paires uniques.
