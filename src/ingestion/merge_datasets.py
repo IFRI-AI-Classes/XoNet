@@ -1,11 +1,11 @@
 import csv
 
-def merge_fongbe_datasets_pure_python():
+def merge_fongbe_datasets():
     # Format : (Nom_du_fichier, index_colonne_fon, index_colonne_fr)
     datasets_config = [
-        ("data/BibleFongbeFrench.csv", 0, 1),
-        ("data/Fongbe_French_Parallel_Dataset1.csv", 0, 1),
-        ("data/French_to_fongbe.csv", 0, 1)
+        ("data/v1/BibleFongbeFrench.csv", 0, 1),
+        ("data/v1/Fongbe_French_Parallel_Dataset1.csv", 0, 1),
+        ("data/v1/French_to_fongbe.csv", 0, 1)
     ]
     
     # Utilisation d'un set (ensemble) pour stocker les paires uniques.
@@ -49,7 +49,7 @@ def merge_fongbe_datasets_pure_python():
         except FileNotFoundError:
             print(f" Attention : Fichier '{filename}' introuvable. Ignoré.")
 
-    output_filename = "fongbe_french_corpus_final.csv"
+    output_filename = "data/fongbe_french_corpus_final.csv"
     
     with open(output_filename, "w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file)
@@ -62,4 +62,4 @@ def merge_fongbe_datasets_pure_python():
     print("Done :)")
 
 if __name__ == "__main__":
-    merge_fongbe_datasets_pure_python()
+    merge_fongbe_datasets()
