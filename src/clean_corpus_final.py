@@ -9,6 +9,7 @@
 #   - Suppression des espaces inutiles (doublons, espaces en début/fin)
 #   - Suppression des caractères parasites
 #   - Correction des caractères Fongbé (đ → ɖ, Đ → Ɖ)
+#   - Découpage des lignes de synonymes en paires individuelles
 #   - Suppression des doublons
 #
 # Opérations de nettoyage ÉVITÉES (spécifique au Fongbé) :
@@ -25,8 +26,8 @@ import os
 # --- Configuration des chemins ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_FILE = os.path.join(SCRIPT_DIR, "../data/fongbe_french_corpus_final.csv")
-OUTPUT_FILE = os.path.join(SCRIPT_DIR, "cleaned_corpus.csv")
-REJECTED_FILE = os.path.join(SCRIPT_DIR, "lignes_rejetées.csv")
+OUTPUT_FILE = os.path.join(SCRIPT_DIR, "../data/cleaned_corpus.csv")
+REJECTED_FILE = os.path.join(SCRIPT_DIR, "../data/lignes_rejetées.csv")
 
 # --- Paramètres de nettoyage ---
 # Caractères Parasites :
@@ -145,6 +146,53 @@ def nettoyer_ligne(texte: str) -> str:
     return texte
 
 
+def decouper_synonymes(lignes: list[dict]) -> list[dict]:
+    """
+    Découpe les lignes contenant des synonymes Fongbé en paires individuelles.
+
+    Certaines lignes du corpus sont de type dictionnaire : le champ Fongbé
+    contient plusieurs synonymes séparés par ' - ' (tiret entouré d'espaces),
+    associés à un seul mot ou expression en français.
+
+    Exemple avant découpage :
+      Fon : "bε̆ adăn - bε̆ azɔ̀n - j'azɔ̀n"
+      Fr  : "tomber malade"
+
+    Après découpage, cela devient 3 paires individuelles :
+      ("bε̆ adăn",     "tomber malade")
+      ("bε̆ azɔ̀n",     "tomber malade")
+      ("j'azɔ̀n",      "tomber malade")
+
+    Cela permet au modèle d'apprendre chaque variante lexicale
+    individuellement, tout en laissant la déduplication éliminer
+    les éventuels chevauchements avec le reste du corpus.
+    """
+    resultats = []
+    nb_decoupees = 0
+
+    for ligne in lignes:
+        fon = ligne['fon']
+
+        # Séparation uniquement sur ' - ' (tiret avec espace des deux côtés)
+        # pour ne pas casser les mots Fongbé contenant un tiret simple
+        parties = [p.strip() for p in fon.split(' - ') if p.strip()]
+
+        if len(parties) > 1:
+            # La ligne contient des synonymes → on découpe
+            nb_decoupees += 1
+            for synonime in parties:
+                resultats.append({
+                    'fon': synonime,
+                    'fr': ligne['fr'],
+                    'ligne_brute': ligne['ligne_brute'],
+                })
+        else:
+            # Pas de tiret ou un seul terme → on garde tel quel
+            resultats.append(ligne)
+
+    return resultats, nb_decoupees
+
+
 def valider_ligne(ligne: dict) -> str:
     """
     Vérifie qu'une ligne contient du contenu valide après nettoyage.
@@ -154,6 +202,10 @@ def valider_ligne(ligne: dict) -> str:
       - "vide"        : un des champs est vide après nettoyage
       - "artefact"    : le texte français ne contient que des chiffres/
                         ponctuation (artefact d'indexation, ex: '28.18')
+      - "definition"  : le texte français est une définition ou explication
+                        longue (≥10 mots) pour un terme Fongbé court (≤4 mots),
+                        ce qui n'est pas une traduction mais une entrée
+                        lexicale du type dictionnaire
     """
     fon = ligne['fon']
     fr = ligne['fr']
@@ -166,6 +218,14 @@ def valider_ligne(ligne: dict) -> str:
     # (souvent des artefacts numériques de la source)
     if re.match(r'^[\d\s.,;:]+$', fr):
         return "artefact"
+
+    # Rejet si le texte est une définition lexicale plutôt qu'une traduction :
+    #   - Fon court (≤4 mots) associé à un FR très long (≥10 mots)
+    #   - C'est typiquement une définition dictionnaire, pas une phrase
+    nb_fon = len(fon.split())
+    nb_fr = len(fr.split())
+    if nb_fon <= 4 and nb_fr >= 10:
+        return "definition"
 
     return None
 
@@ -205,7 +265,13 @@ def main():
         ligne['fon'] = nettoyer_ligne(ligne['fon'])
         ligne['fr'] = nettoyer_ligne(ligne['fr'])
 
-    # --- Étape 3 : Validation (suppression des lignes invalides) ---
+    # --- Étape 3 : Découpage des lignes de synonymes ---
+    # Avant validation, on découpe les lignes de type dictionnaire
+    # (plusieurs termes Fon séparés par ' - ' → une paire individuelle par terme)
+    lignes, nb_synonymes = decouper_synonymes(lignes)
+    print(f"  -> {nb_synonymes} lignes de synonymes découpées en paires individuelles")
+
+    # --- Étape 4 : Validation (suppression des lignes invalides) ---
     lignes_valides = []
     lignes_rejetees = []
 
@@ -220,7 +286,7 @@ def main():
     nb_invalides = len(lignes_rejetees)
     print(f"  -> {nb_invalides} lignes invalides supprimées (champs vides ou artefacts)")
 
-    # --- Étape 4 : Suppression des doublons ---
+    # --- Étape 5 : Suppression des doublons ---
     vus = set()
     lignes_finales = []
     for ligne in lignes_valides:
@@ -235,7 +301,7 @@ def main():
     nb_doublons = len(lignes_valides) - len(lignes_finales)
     print(f"  -> {nb_doublons} doublons supprimés")
 
-    # --- Étape 5 : Écriture du fichier nettoyé ---
+    # --- Étape 6 : Écriture du fichier nettoyé ---
     with open(OUTPUT_FILE, 'w', encoding='utf-8', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['fon', 'fr'])
         writer.writeheader()
@@ -245,7 +311,7 @@ def main():
 
     print(f"  -> {len(lignes_finales)} lignes finales écrites dans : {OUTPUT_FILE}")
 
-    # --- Étape 6 : Écriture du fichier des lignes rejetées ---
+    # --- Étape 7 : Écriture du fichier des lignes rejetées ---
     with open(REJECTED_FILE, 'w', encoding='utf-8', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['ligne_brute', 'fon', 'fr', 'raison'])
         writer.writeheader()
