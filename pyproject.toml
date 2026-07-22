@@ -1,10 +1,29 @@
 [project]
 name = "xonet"
 version = "0.1.0"
-description = "Add your description here"
+description = "Traduction Fongbé–Français et classification de sentiment"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    # Collecte de données (existant)
     "beautifulsoup4>=4.15.0",
     "requests>=2.34.2",
+    # Backend API
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.0.0",
+    "python-multipart>=0.0.9",
+    # NLP / modèle de sentiment
+    "transformers>=4.40.0",
+    "torch>=2.2.0",
+    "safetensors>=0.4.3",
+    # Lecture du corpus CSV
+    "pandas>=2.2.0",
 ]
+
+[project.scripts]
+xonet-api = "api.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
