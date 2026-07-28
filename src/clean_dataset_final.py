@@ -15,6 +15,7 @@
 #   - Filtre sur la longueur minimale (≥3 mots par langue)
 #   - Suppression des artefacts numériques
 #   - Suppression des définitions dictionnaire
+#   - Décodage des entités HTML (&quot; → ", &amp; → &, etc.)
 #   - Suppression des doublons
 #
 # Opérations de nettoyage ÉVITÉES (spécifique au Fongbé) :
@@ -25,6 +26,7 @@
 
 import csv
 import unicodedata
+import html
 import re
 import os
 
@@ -32,7 +34,7 @@ import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(SCRIPT_DIR)  # remonte à la racine
 INPUT_FILE = os.path.join(PROJECT_DIR, "data/fongbe_french_corpus_final.csv")
-OUTPUT_FILE = os.path.join(PROJECT_DIR, "data/cleaned_corpus.csv")
+OUTPUT_FILE = os.path.join(PROJECT_DIR, "data/cleaned_dataset_final.csv")
 REJECTED_FILE = os.path.join(PROJECT_DIR, "data/lignes_rejetées.csv")
 # --- Paramètres de nettoyage ---
 # Caractères Parasites :
@@ -173,6 +175,21 @@ def nettoyer_ponctuation(texte: str) -> str:
             texte = texte.replace(fermant, '', nb_fermant - nb_ouvrant)
 
     return texte
+def decoder_entites_html(texte: str) -> str:
+    """
+    Décode les entités HTML présentes dans le texte.
+
+    Entités traitées :
+      - &quot; → " (guillemet double)
+      - &amp; → & (esperluette)
+      - Toutes les autres entités HTML standard (&#233; → é, etc.)
+
+    Pourquoi :
+      Le corpus contient des données extraites de sources web où les
+      caractères spéciaux ont été encodés en entités HTML. On les
+      reconvertit en caractères Unicode réels avant le nettoyage.
+    """
+    return html.unescape(texte)
 
 
 def nettoyer_ligne(texte: str) -> str:
@@ -180,12 +197,14 @@ def nettoyer_ligne(texte: str) -> str:
     Applique le pipeline complet de nettoyage à un texte unique.
 
     Ordre d'opération :
-      1. Normalisation Unicode (NFC)
-      2. Suppression des caractères parasites
-      3. Correction des caractères Fongbé (đ → ɖ, Đ → Ɖ)
-      4. Nettoyage de la ponctuation résiduelle
-      5. Normalisation des espaces
+        1. Décodage des entités HTML (&quot; → ", &amp; → &)
+        2. Normalisation Unicode (NFC)
+        3. Suppression des caractères parasites
+        4. Correction des caractères Fongbé (đ → ɖ, Đ → Ɖ)
+        5. Nettoyage de la ponctuation résiduelle
+        6. Normalisation des espaces
     """
+    texte = decoder_entites_html(texte)
     texte = uniformiser_encodage(texte)
     texte = supprimer_caracteres_parasites(texte)
     texte = corriger_caracteres_fongbe(texte)
