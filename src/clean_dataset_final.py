@@ -9,7 +9,12 @@
 #   - Suppression des espaces inutiles (doublons, espaces en début/fin)
 #   - Suppression des caractères parasites
 #   - Correction des caractères Fongbé (đ → ɖ, Đ → Ɖ)
+#   - Nettoyage de la ponctuation résiduelle (guillemets/parenthèses orphelins)
 #   - Découpage des lignes de synonymes en paires individuelles
+#   - Filtre sur le ratio de longueur Fon/FR (max/min ≤ 5)
+#   - Filtre sur la longueur minimale (≥3 mots par langue)
+#   - Suppression des artefacts numériques
+#   - Suppression des définitions dictionnaire
 #   - Suppression des doublons
 #
 # Opérations de nettoyage ÉVITÉES (spécifique au Fongbé) :
@@ -25,10 +30,10 @@ import os
 
 # --- Configuration des chemins ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILE = os.path.join(SCRIPT_DIR, "../data/fongbe_french_corpus_final.csv")
-OUTPUT_FILE = os.path.join(SCRIPT_DIR, "../data/cleaned_corpus.csv")
-REJECTED_FILE = os.path.join(SCRIPT_DIR, "../data/lignes_rejetées.csv")
-
+PROJECT_DIR = os.path.dirname(SCRIPT_DIR)  # remonte à la racine
+INPUT_FILE = os.path.join(PROJECT_DIR, "data/fongbe_french_corpus_final.csv")
+OUTPUT_FILE = os.path.join(PROJECT_DIR, "data/cleaned_corpus.csv")
+REJECTED_FILE = os.path.join(PROJECT_DIR, "data/lignes_rejetées.csv")
 # --- Paramètres de nettoyage ---
 # Caractères Parasites :
 #   - Guillemets simples/doubles résiduels inutiles (hors CSV quoting)
@@ -129,6 +134,47 @@ def corriger_caracteres_fongbe(texte: str) -> str:
     return texte
 
 
+def nettoyer_ponctuation(texte: str) -> str:
+    """
+    Supprime les guillemets et parenthèses orphelins du texte.
+
+    Cas traités :
+      - Guillemets doubles non assortis (", ") → supprimés s'ils n'ont pas de pair
+      - Guillemets courbes non assortis (", ") → supprimés s'ils n'ont pas de pair
+      - Parenthèses/crochets/accolades non assortis → supprimés si orphelins
+      - Guillemets français « » non assortis → supprimés si orphelins
+
+    Attention : les apostrophes ' (U+2019) ne sont PAS touchées car elles
+    servent de signe de contraction en français (j'ai, l'homme, qu'ils, etc.)
+    et ne sont pas des guillemets.
+    """
+    # Paires de ponctuation à vérifier : (ouvrant, fermant)
+    # NOTE : on n'inclut PAS les apostrophes \u2018/\u2019 car en français
+    # le ' (U+2019) est une apostrophe de contraction, pas un guillemet.
+    paires = [
+        ('"', '"'),               # guillemets doubles droits
+        ('\u201c', '\u201d'),     # guillemets courbes "" 
+        ('(', ')'),               # parenthèses
+        ('[', ']'),               # crochets
+        ('{', '}'),               # accolades
+        ('\u00ab', '\u00bb'),     # guillemets français « »
+    ]
+
+    for ouvrant, fermant in paires:
+        nb_ouvrant = texte.count(ouvrant)
+        nb_fermant = texte.count(fermant)
+
+        if nb_ouvrant > nb_fermant:
+            # Plus d'ouvrants que de fermants → supprimer les excédents
+            # On retire depuis la fin pour ne pas casser les paires valides
+            texte = texte[::-1].replace(ouvrant[::-1], '', nb_ouvrant - nb_fermant)[::-1]
+        elif nb_fermant > nb_ouvrant:
+            # Plus de fermants que d'ouvrants → supprimer les excédents
+            texte = texte.replace(fermant, '', nb_fermant - nb_ouvrant)
+
+    return texte
+
+
 def nettoyer_ligne(texte: str) -> str:
     """
     Applique le pipeline complet de nettoyage à un texte unique.
@@ -137,11 +183,13 @@ def nettoyer_ligne(texte: str) -> str:
       1. Normalisation Unicode (NFC)
       2. Suppression des caractères parasites
       3. Correction des caractères Fongbé (đ → ɖ, Đ → Ɖ)
-      4. Normalisation des espaces
+      4. Nettoyage de la ponctuation résiduelle
+      5. Normalisation des espaces
     """
     texte = uniformiser_encodage(texte)
     texte = supprimer_caracteres_parasites(texte)
     texte = corriger_caracteres_fongbe(texte)
+    texte = nettoyer_ponctuation(texte)
     texte = normaliser_espaces(texte)
     return texte
 
@@ -202,10 +250,11 @@ def valider_ligne(ligne: dict) -> str:
       - "vide"        : un des champs est vide après nettoyage
       - "artefact"    : le texte français ne contient que des chiffres/
                         ponctuation (artefact d'indexation, ex: '28.18')
+      - "trop_court"  : l'un des textes contient moins de 3 mots
+      - "ratio"       : le ratio de longueur max/min entre Fon et FR
+                        dépasse 5 (paire mal alignée)
       - "definition"  : le texte français est une définition ou explication
-                        longue (≥10 mots) pour un terme Fongbé court (≤4 mots),
-                        ce qui n'est pas une traduction mais une entrée
-                        lexicale du type dictionnaire
+                        longue (≥10 mots) pour un terme Fongbé court (≤4 mots)
     """
     fon = ligne['fon']
     fr = ligne['fr']
@@ -215,15 +264,27 @@ def valider_ligne(ligne: dict) -> str:
         return "vide"
 
     # Rejet si le texte français ne contient que des chiffres/points/virgules
-    # (souvent des artefacts numériques de la source)
     if re.match(r'^[\d\s.,;:]+$', fr):
         return "artefact"
 
-    # Rejet si le texte est une définition lexicale plutôt qu'une traduction :
-    #   - Fon court (≤4 mots) associé à un FR très long (≥10 mots)
-    #   - C'est typiquement une définition dictionnaire, pas une phrase
+    # Calcul du nombre de mots de chaque côté
     nb_fon = len(fon.split())
     nb_fr = len(fr.split())
+
+    # Rejet si l'un des textes est trop court (< 3 mots)
+    # Un texte trop court n'apporte pas assez de contexte pour l'apprentissage
+    if nb_fon < 3 or nb_fr < 3:
+        return "trop_court"
+
+    # Rejet si le ratio de longueur est trop élevé (> 5)
+    # Cela détecte les paires mal alignées où une langue est beaucoup plus
+    # longue que l'autre (ex: une phrase complète vs un seul mot)
+    ratio = max(nb_fon, nb_fr) / min(nb_fon, nb_fr)
+    if ratio > 5:
+        return "ratio"
+
+    # Rejet si le texte est une définition lexicale plutôt qu'une traduction :
+    # Fon court (≤4 mots) associé à un FR très long (≥10 mots)
     if nb_fon <= 4 and nb_fr >= 10:
         return "definition"
 
@@ -254,6 +315,8 @@ def main():
         reader = csv.reader(f)
         header = next(reader)  # saute l'en-tête (ligne 1)
         for row in reader:
+            if len(row) < 2:
+              continue
             ligne = {'fon': row[0], 'fr': row[1]}
             ligne['ligne_brute'] = reader.line_num
             lignes.append(ligne)
