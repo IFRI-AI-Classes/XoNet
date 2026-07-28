@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XoNet — Sentiment Fon (Fongbé)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --card-border: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --accent-light: rgba(79, 70, 229, 0.08);
+            --neutral-color: #64748b;
+            --positive-color: #16a34a;
+            --negative-color: #dc2626;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .badge-benin {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        /* Clavier de raccourcis Fongbé */
+        .fon-char-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .char-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .char-btn:hover {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        textarea:focus {
+            background: #ffffff;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .examples {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .examples-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .example-chip {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .example-chip:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-submit:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 10px -1px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Résultat */
+        .result-container {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--card-border);
+            display: none;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .sentiment-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .confidence-tag {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Barre de probabilités */
+        .probs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .prob-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .prob-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .prob-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        /* Error state */
+        .error-msg {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="badge-benin">XoNet</div>
+            <h1>Analyse de Sentiment Fon</h1>
+            <p>Tapez une phrase en fongbé pour prédire son sentiment en temps réel.</p>
+        </div>
+
+        <div class="card">
+            <div class="form-group">
+                <label>Caractères spéciaux Fongbé :</label>
+                <div class="fon-char-bar">
+                    <button type="button" class="char-btn" onclick="insertChar('ɛ')">ɛ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɔ')">ɔ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɖ')">ɖ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɣ')">ɣ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɲ')">ɲ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('Ɛ')">Ɛ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('Ɔ')">Ɔ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('Ɖ')">Ɖ</button>
+                </div>
+
+                <textarea id="inputText" placeholder="Taper une phrase en fon ici (ex: A ɖò ganji...)" autofocus></textarea>
+            </div>
+
+            <div class="examples">
+                <span class="examples-title">Exemples :</span>
+                <span class="example-chip" onclick="setExample('A ɖò ganji')">A ɖò ganji (Ça va bien)</span>
+                <span class="example-chip" onclick="setExample('Un nyɔ́ nà we ǎ')">Un nyɔ́ nà we ǎ (Je n'aime pas)</span>
+                <span class="example-chip" onclick="setExample('Nùɖúɖú élɔ víví ɖeji')">Nùɖúɖú élɔ víví (Ce repas est délicieux)</span>
+            </div>
+
+            <button id="btnPredict" class="btn-submit" onclick="predictSentiment()">
+                <span>Analyser le sentiment</span>
+            </button>
+
+            <div id="errorMsg" class="error-msg"></div>
+
+            <div id="resultContainer" class="result-container">
+                <div class="result-header">
+                    <div id="sentimentBadge" class="sentiment-badge">
+                        <span id="badgeEmoji">😐</span>
+                        <span id="badgeName">Neutre</span>
+                    </div>
+                </div>
+
+                <div class="probs-list">
+                    <div class="prob-item">
+                        <div class="prob-label-row">
+                            <span style="color: #64748b;">😐 Neutre</span>
+                            <span id="valNeutre" style="color: #475569;">0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div id="barNeutre" class="prob-bar-fill" style="width: 0%; background: #64748b;"></div>
+                        </div>
+                    </div>
+
+                    <div class="prob-item">
+                        <div class="prob-label-row">
+                            <span style="color: #dc2626;">🙁 Négatif</span>
+                            <span id="valNegatif" style="color: #dc2626;">0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div id="barNegatif" class="prob-bar-fill" style="width: 0%; background: #dc2626;"></div>
+                        </div>
+                    </div>
+
+                    <div class="prob-item">
+                        <div class="prob-label-row">
+                            <span style="color: #16a34a;">😊 Positif</span>
+                            <span id="valPositif" style="color: #16a34a;">0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div id="barPositif" class="prob-bar-fill" style="width: 0%; background: #16a34a;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function insertChar(char) {
+            const textarea = document.getElementById('inputText');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + char + text.substring(end);
+            textarea.focus();
+            textarea.selectionStart = textarea.selectionEnd = start + char.length;
+        }
+
+        function setExample(text) {
+            document.getElementById('inputText').value = text;
+            predictSentiment();
+        }
+
+        async function predictSentiment() {
+            const text = document.getElementById('inputText').value.trim();
+            const btn = document.getElementById('btnPredict');
+            const errorMsg = document.getElementById('errorMsg');
+            const resultContainer = document.getElementById('resultContainer');
+
+            errorMsg.style.display = 'none';
+
+            if (!text) {
+                errorMsg.innerText = 'Veuillez saisir une phrase en fon.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Analyse en cours...</span>';
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erreur lors de la prédiction.');
+                }
+
+                // Mettre à jour l'affichage
+                const badge = document.getElementById('sentimentBadge');
+                document.getElementById('badgeEmoji').innerText = data.emoji;
+                document.getElementById('badgeName').innerText = data.sentiment;
+
+                if (data.sentiment === 'Positif') {
+                    badge.style.background = '#f0fdf4';
+                    badge.style.color = '#16a34a';
+                    badge.style.border = '1px solid #bbf7d0';
+                } else if (data.sentiment === 'Négatif') {
+                    badge.style.background = '#fef2f2';
+                    badge.style.color = '#dc2626';
+                    badge.style.border = '1px solid #fecaca';
+                } else {
+                    badge.style.background = '#f8fafc';
+                    badge.style.color = '#475569';
+                    badge.style.border = '1px solid #cbd5e1';
+                }
+
+                // Probabilités
+                if (data.probabilities) {
+                    const pNeu = (data.probabilities.Neutre * 100) || 0;
+                    const pNeg = (data.probabilities.Négatif * 100) || 0;
+                    const pPos = (data.probabilities.Positif * 100) || 0;
+
+                    document.getElementById('valNeutre').innerText = `${pNeu.toFixed(1)}%`;
+                    document.getElementById('barNeutre').style.width = `${pNeu}%`;
+
+                    document.getElementById('valNegatif').innerText = `${pNeg.toFixed(1)}%`;
+                    document.getElementById('barNegatif').style.width = `${pNeg}%`;
+
+                    document.getElementById('valPositif').innerText = `${pPos.toFixed(1)}%`;
+                    document.getElementById('barPositif').style.width = `${pPos}%`;
+                }
+
+                resultContainer.style.display = 'block';
+
+            } catch (err) {
+                errorMsg.innerText = err.message;
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Analyser le sentiment</span>';
+            }
+        }
+
+
+        document.getElementById('inputText').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                predictSentiment();
+            }
+        });
+    </script>
+</body>
+</html>
