@@ -1,0 +1,23 @@
+{
+  "model_name": "facebook/nllb-200-distilled-600M",
+  "data_path": "/kaggle/input/datasets/victoriatovihouande/xonet-dataset/cleaned_dataset_final.csv",
+  "output_dir": "/kaggle/working/models/nllb-finetuned-fon-fr",
+  "cache_dir": "models/cache",
+  "checkpoint_dir": "/kaggle/working/models/checkpoints",
+  "max_train_samples": null,
+  "max_source_length": 128,
+  "max_target_length": 128,
+  "batch_size": 4,
+  "gradient_accumulation_steps": 4,
+  "learning_rate": 3e-05,
+  "weight_decay": 0.01,
+  "num_epochs": 3,
+  "warmup_ratio": 0.1,
+  "train_ratio": 0.8,
+  "val_ratio": 0.1,
+  "test_ratio": 0.1,
+  "eval_samples": 500,
+  "seed": 42,
+  "source_lang": "fon_Latn",
+  "target_lang": "fra_Latn"
+}

@@ -1,0 +1,27 @@
+{
+  "model": "input/datasets/victoriatovihouande/xonet-nllb-fon-fr",
+  "data": "input/datasets/victoriatovihouande/xonet-dataset/cleaned_dataset_final.csv",
+  "num_evaluated": 500,
+  "split": {
+    "seed": 42,
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "metrics": {
+    "fon_fr": {
+      "bleu": 26.86424829558855,
+      "chrf": 43.371196455792536,
+      "exact_match_pct": 3.2,
+      "avg_pred_len": 10.188,
+      "avg_ref_len": 10.568
+    },
+    "fr_fon": {
+      "bleu": 7.809849842300641,
+      "chrf": 16.151075530468137,
+      "exact_match_pct": 0.0,
+      "avg_pred_len": 11.588,
+      "avg_ref_len": 14.004
+    }
+  }
+}
