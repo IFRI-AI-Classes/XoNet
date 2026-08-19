@@ -1,0 +1,148 @@
+Best model: LinearSVC_calibrated
+Selection metric: f1_macro on validation
+
+{
+  "best_model": "LinearSVC_calibrated",
+  "selection_metric": "f1_macro",
+  "dataset": "data/corpus_final.csv",
+  "split": {
+    "train": 60988,
+    "validation": 13069,
+    "test": 13069,
+    "random_state": 42
+  },
+  "vectorizer": {
+    "analyzer": "char_wb",
+    "ngram_range": [
+      2,
+      6
+    ],
+    "max_features": 80000,
+    "min_df": 2,
+    "sublinear_tf": true,
+    "lowercase": false
+  },
+  "validation_results": {
+    "ComplementNB": {
+      "accuracy": 0.6452674267350218,
+      "f1_macro": 0.5983152234907615,
+      "f1_weighted": 0.6558352838182192,
+      "f1_by_class": {
+        "Neutre": 0.7338515512141432,
+        "Negatif": 0.5558394709153766,
+        "Positif": 0.5052546483427648
+      },
+      "fit_seconds": 18.20325690001482,
+      "decision_weights": [
+        1.05,
+        1.0,
+        1.0
+      ]
+    },
+    "SGDClassifier_log_loss_balanced": {
+      "accuracy": 0.7073991889203458,
+      "f1_macro": 0.6470856407727962,
+      "f1_weighted": 0.7078042444606636,
+      "f1_by_class": {
+        "Neutre": 0.7930165132988781,
+        "Negatif": 0.5819996558251592,
+        "Positif": 0.5662407531943511
+      },
+      "fit_seconds": 19.00518199999351,
+      "decision_weights": [
+        1.05,
+        1.0,
+        1.0
+      ]
+    },
+    "LogisticRegression_balanced": {
+      "accuracy": 0.6770219603642207,
+      "f1_macro": 0.6370196527192812,
+      "f1_weighted": 0.6866614860532679,
+      "f1_by_class": {
+        "Neutre": 0.7544645935323726,
+        "Negatif": 0.5970149253731343,
+        "Positif": 0.5595794392523364
+      },
+      "fit_seconds": 29.883824600023217,
+      "decision_weights": [
+        1.05,
+        1.0,
+        1.0
+      ]
+    },
+    "LinearSVC_balanced_calibrated": {
+      "accuracy": 0.7122197566761037,
+      "f1_macro": 0.6536408121263607,
+      "f1_weighted": 0.7126279420988684,
+      "f1_by_class": {
+        "Neutre": 0.7942233713817242,
+        "Negatif": 0.5988205560235889,
+        "Positif": 0.567878508973769
+      },
+      "fit_seconds": 45.72184080001898,
+      "decision_weights": [
+        0.8,
+        1.3,
+        1.5
+      ]
+    },
+    "LinearSVC_calibrated": {
+      "accuracy": 0.7141326803887061,
+      "f1_macro": 0.6542184311420897,
+      "f1_weighted": 0.7140040198284324,
+      "f1_by_class": {
+        "Neutre": 0.796305604423222,
+        "Negatif": 0.6014784946236559,
+        "Positif": 0.5648711943793912
+      },
+      "fit_seconds": 39.094008199987,
+      "decision_weights": [
+        0.9,
+        1.5,
+        1.7000000000000002
+      ]
+    }
+  },
+  "test": {
+    "accuracy": 0.7227790955696687,
+    "f1_macro": 0.6658902449505574,
+    "f1_weighted": 0.7230395478891836,
+    "f1_by_class": {
+      "Neutre": 0.8016393442622951,
+      "Negatif": 0.6159468438538206,
+      "Positif": 0.5800845467355566
+    }
+  },
+  "existing_voting_test": {
+    "accuracy": 0.718953248144464,
+    "f1_macro": 0.6519615450329765,
+    "f1_weighted": 0.7146860593991934,
+    "f1_by_class": {
+      "Neutre": 0.8024608637388073,
+      "Negatif": 0.586490939044481,
+      "Positif": 0.5669328323156412
+    }
+  },
+  "label_names": {
+    "0": "Neutre",
+    "1": "Negatif",
+    "2": "Positif"
+  }
+}
+
+Classification report:
+              precision    recall  f1-score   support
+
+      Neutre     0.8039    0.7994    0.8016      7952
+     Negatif     0.6077    0.6245    0.6159      2969
+     Positif     0.5853    0.5750    0.5801      2148
+
+    accuracy                         0.7228     13069
+   macro avg     0.6656    0.6663    0.6659     13069
+weighted avg     0.7234    0.7228    0.7230     13069
+
+Confusion matrix:
+[[6357  939  656]
+ [ 896 1854  219]
+ [ 655  258 1235]]

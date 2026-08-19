@@ -10,15 +10,37 @@ MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
 
 tfidf = None
 model = None
+sentiment_pipeline = None
 
 # Changer le nom ici pour utiliser un autre modèle :
 #   "mnb_model.joblib"    → Multinomial Naive Bayes
 #   "rf_model.joblib"     → Random Forest
 #   "voting_model.joblib" → Soft Voting Classifier (par défaut)
-MODEL_FILENAME = "rf_model.joblib"
+MODEL_FILENAME = os.getenv("XONET_MODEL_FILENAME", "voting_model.joblib")
+
+# Default to the tuned v3 pipeline. Override with a custom filename or an empty
+# env var to force legacy mode,
+# or set a custom pipeline filename.
+# PowerShell:
+#   $env:XONET_PIPELINE_FILENAME="sentiment_pipeline_v3_tuned.joblib"
+#   $env:XONET_PIPELINE_FILENAME=""
+PIPELINE_FILENAME = os.getenv(
+    "XONET_PIPELINE_FILENAME", "sentiment_pipeline_v3_tuned.joblib"
+).strip()
 
 def load_model():
-    global tfidf, model
+    global tfidf, model, sentiment_pipeline
+
+    if PIPELINE_FILENAME:
+        pipeline_path = os.path.join(MODELS_DIR, PIPELINE_FILENAME)
+        if os.path.exists(pipeline_path):
+            sentiment_pipeline = joblib.load(pipeline_path)
+            model = sentiment_pipeline
+            tfidf = None
+            print(f"Pipeline ({PIPELINE_FILENAME}) loaded successfully.")
+            return
+        print("Requested pipeline not found in", MODELS_DIR)
+
     tfidf_path = os.path.join(MODELS_DIR, "tfidf.joblib")
     model_path = os.path.join(MODELS_DIR, MODEL_FILENAME)
 
@@ -37,10 +59,20 @@ LABEL_MAP = {
 
 @app.route("/api/predict", methods=["POST"])
 def predict():
-    if tfidf is None or model is None:
+    model_missing = (
+        sentiment_pipeline is None
+        if PIPELINE_FILENAME
+        else tfidf is None or model is None
+    )
+    if model_missing:
         load_model()
-        if tfidf is None or model is None:
-            return jsonify({"error": "Modèle non entraîné/exporté."}), 500
+        model_missing = (
+            sentiment_pipeline is None
+            if PIPELINE_FILENAME
+            else tfidf is None or model is None
+        )
+        if model_missing:
+            return jsonify({"error": "Modele non entraine/exporte."}), 500
 
     data = request.get_json(force=True, silent=True) or {}
     text = data.get("text", "").strip()
@@ -49,13 +81,20 @@ def predict():
         return jsonify({"error": "Veuillez fournir un texte en fon."}), 400
 
     try:
-        X = tfidf.transform([text])
-        pred_label = int(model.predict(X)[0])
+        if sentiment_pipeline is not None:
+            proba_input = [text]
+            probability_model = sentiment_pipeline
+            pred_label = int(sentiment_pipeline.predict(proba_input)[0])
+        else:
+            X = tfidf.transform([text])
+            proba_input = X
+            probability_model = model
+            pred_label = int(model.predict(X)[0])
 
         probs = {}
         confidence = None
-        if hasattr(model, "predict_proba"):
-            probabilities = model.predict_proba(X)[0]
+        if hasattr(probability_model, "predict_proba"):
+            probabilities = probability_model.predict_proba(proba_input)[0]
             confidence = float(max(probabilities))
             probs = {
                 "Neutre": float(probabilities[0]),
