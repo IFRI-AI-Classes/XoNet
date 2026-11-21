@@ -27,15 +27,23 @@ class WeightedDecisionPipeline:
     def predict_proba(self, X):
         if not hasattr(self.pipeline, "predict_proba"):
             raise AttributeError("The wrapped pipeline does not expose predict_proba.")
-        return self.pipeline.predict_proba(X)
+        probs = self.pipeline.predict_proba(X)
+        if self.decision_weights is not None:
+            weights = np.asarray(self.decision_weights, dtype=float)
+            if probs.shape[1] == len(weights):
+                weighted = probs * weights
+                row_sums = weighted.sum(axis=1, keepdims=True)
+                return np.divide(
+                    weighted,
+                    row_sums,
+                    out=np.array(probs, dtype=float, copy=True),
+                    where=row_sums > 0,
+                )
+        return probs
 
     def predict(self, X):
         if self.decision_weights is not None and hasattr(self.pipeline, "predict_proba"):
-            probs = self.pipeline.predict_proba(X)
-            weights = np.asarray(self.decision_weights, dtype=float)
-            if probs.shape[1] != len(weights):
-                return self.pipeline.predict(X)
-            weighted = probs * weights
-            return self.classes_[np.argmax(weighted, axis=1)]
+            probs = self.predict_proba(X)
+            return self.classes_[np.argmax(probs, axis=1)]
         return self.pipeline.predict(X)
 

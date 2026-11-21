@@ -221,3 +221,5 @@ env/
 
 models/*.joblib
 models/**/*.safetensors
+
+Xonet_Modeles_et_Metriques.docx

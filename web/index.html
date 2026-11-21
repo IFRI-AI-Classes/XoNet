@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XoNet — Sentiment Fon (Fongbé)</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>XoNet — Analyse de Sentiment Fongbé</title>
     <style>
         :root {
-            --bg: #f8fafc;
+            --bg: #f4f7fb;
             --card: #ffffff;
-            --card-border: #e2e8f0;
+            --card-border: #dbeafe;
+            --border-subtle: #e2e8f0;
             --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --accent: #4f46e5;
-            --accent-hover: #4338ca;
-            --accent-light: rgba(79, 70, 229, 0.08);
-            --neutral-color: #64748b;
+            --text-secondary: #475569;
+            --accent: #1d4ed8;
+            --accent-hover: #1e40af;
+            --accent-light: rgba(29, 78, 216, 0.10);
+            --accent-soft: #eff6ff;
             --positive-color: #16a34a;
+            --neutral-color: #eab308;
+            --neutral-text: #a16207;
             --negative-color: #dc2626;
             --radius: 16px;
         }
@@ -30,47 +30,55 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg);
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(180deg, #eff6ff 0%, var(--bg) 45%, #ffffff 100%);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px 16px;
+            padding: 28px 16px;
         }
 
         .container {
             width: 100%;
-            max-width: 680px;
+            max-width: 700px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
-        .badge-benin {
+        .badge-brand {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
+            gap: 8px;
+            background: var(--accent-soft);
+            border: 1px solid #bfdbfe;
             padding: 6px 14px;
-            border-radius: 20px;
+            border-radius: 999px;
             font-size: 13px;
-            font-weight: 600;
-            color: #475569;
+            font-weight: 700;
+            color: var(--accent);
             margin-bottom: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
         }
 
         .header h1 {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            color: #0f172a;
-            margin-bottom: 8px;
+            color: var(--text-primary);
+            margin-bottom: 6px;
         }
 
         .header p {
@@ -82,20 +90,60 @@
             background: var(--card);
             border: 1px solid var(--card-border);
             border-radius: var(--radius);
-            padding: 28px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 26px 28px;
+            box-shadow: 0 12px 30px -8px rgba(29, 78, 216, 0.08), 0 4px 10px -4px rgba(15, 23, 42, 0.04);
+        }
+
+        .card-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .model-picker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-picker label {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .model-select {
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--accent-soft);
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 6px 10px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .model-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
-        label {
+        .field-label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         /* Clavier de raccourcis Fongbé */
@@ -107,9 +155,9 @@
         }
 
         .char-btn {
-            background: #f1f5f9;
+            background: #f8fafc;
             border: 1px solid #cbd5e1;
-            color: #0f172a;
+            color: var(--text-primary);
             font-family: inherit;
             font-size: 15px;
             font-weight: 600;
@@ -132,7 +180,7 @@
 
         textarea {
             width: 100%;
-            height: 110px;
+            height: 108px;
             background: #f8fafc;
             border: 1px solid #cbd5e1;
             border-radius: 12px;
@@ -140,7 +188,7 @@
             color: var(--text-primary);
             font-family: inherit;
             font-size: 16px;
-            resize: none;
+            resize: vertical;
             outline: none;
             transition: all 0.2s ease;
         }
@@ -152,34 +200,60 @@
         }
 
         .examples {
-            display: flex;
-            gap: 8px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: center;
         }
 
         .examples-title {
+            display: block;
             font-size: 12px;
             color: var(--text-secondary);
             font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .examples-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .example-chip {
-            background: #f1f5f9;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #f8fafc;
             border: 1px solid #cbd5e1;
-            color: #334155;
-            font-size: 12px;
-            padding: 5px 12px;
-            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 500;
+            padding: 6px 11px;
+            border-radius: 999px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .example-chip:hover {
-            background: #e2e8f0;
-            color: #0f172a;
+            background: var(--accent-soft);
+            border-color: #93c5fd;
+            color: var(--accent-hover);
         }
+
+        .example-chip .chip-fr {
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .dot-pos { background: var(--positive-color); }
+        .dot-neu { background: var(--neutral-color); }
+        .dot-neg { background: var(--negative-color); }
 
         .btn-submit {
             width: 100%;
@@ -187,8 +261,8 @@
             color: #ffffff;
             border: none;
             border-radius: 12px;
-            padding: 14px;
-            font-size: 16px;
+            padding: 13px 16px;
+            font-size: 15.5px;
             font-weight: 700;
             font-family: inherit;
             cursor: pointer;
@@ -197,17 +271,17 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 4px 10px -2px rgba(29, 78, 216, 0.25);
         }
 
         .btn-submit:hover {
             background: var(--accent-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 10px -1px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 6px 14px -2px rgba(29, 78, 216, 0.32);
         }
 
         .btn-submit:disabled {
-            opacity: 0.6;
+            opacity: 0.65;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -215,9 +289,9 @@
 
         /* Résultat */
         .result-container {
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 1px solid var(--card-border);
+            margin-top: 22px;
+            padding-top: 22px;
+            border-top: 1px solid var(--border-subtle);
             display: none;
         }
 
@@ -225,6 +299,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
             margin-bottom: 16px;
         }
 
@@ -233,29 +309,42 @@
             align-items: center;
             gap: 10px;
             padding: 8px 18px;
-            border-radius: 30px;
+            border-radius: 999px;
             font-size: 18px;
             font-weight: 700;
         }
 
-        .confidence-tag {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 600;
+        .result-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
         }
 
-        /* Barre de probabilités */
+        .confidence-tag {
+            font-size: 13.5px;
+            color: var(--text-primary);
+            font-weight: 700;
+            cursor: help;
+        }
+
+        .model-tag {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Barres de probabilités */
         .probs-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 16px;
+            gap: 11px;
         }
 
         .prob-item {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 5px;
         }
 
         .prob-label-row {
@@ -267,35 +356,40 @@
 
         .prob-bar-bg {
             width: 100%;
-            height: 8px;
+            height: 9px;
             background: #e2e8f0;
-            border-radius: 4px;
+            border-radius: 999px;
             overflow: hidden;
         }
 
         .prob-bar-fill {
             height: 100%;
-            border-radius: 4px;
-            transition: width 0.4s ease;
+            border-radius: 999px;
+            transition: width 0.35s ease;
         }
 
         /* Error state */
         .error-msg {
             background: #fef2f2;
-            border: 1px solid #fca5a5;
+            border: 1px solid #fecaca;
             color: #991b1b;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 14px;
             margin-top: 16px;
             display: none;
         }
 
-        footer {
-            margin-top: 24px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-secondary);
+        @media (max-width: 520px) {
+            .card {
+                padding: 20px 18px;
+            }
+            .card-topbar {
+                justify-content: flex-start;
+            }
+            .result-meta {
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -303,37 +397,79 @@
 
     <div class="container">
         <div class="header">
-            <div class="badge-benin">XoNet</div>
-            <h1>Analyse de Sentiment Fon</h1>
-            <p>Tapez une phrase en fongbé pour prédire son sentiment en temps réel.</p>
+            <div class="badge-brand">
+                <span class="badge-dot"></span>
+                <span>XoNet</span>
+            </div>
+            <h1>Analyse de Sentiment Fongbé</h1>
+            <p>Évaluez instantanément la tonalité d'un texte en langue fon.</p>
         </div>
 
         <div class="card">
+            <div class="card-topbar">
+                <div class="model-picker">
+                    <label for="modelSelect">Modèle :</label>
+                    <select id="modelSelect" class="model-select" aria-label="Sélection du modèle" title="Sélectionner le moteur d'analyse">
+                        <option value="v3_tuned">SVM Hybride v3 (Char+Word) (75.4%)</option>
+                        <option value="soft_voting">Soft Voting (MNB + Random Forest) (71.9%)</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-group">
-                <label>Caractères spéciaux Fongbé :</label>
+                <span class="field-label">Caractères spéciaux :</span>
                 <div class="fon-char-bar">
-                    <button type="button" class="char-btn" onclick="insertChar('ɛ')">ɛ</button>
-                    <button type="button" class="char-btn" onclick="insertChar('ɔ')">ɔ</button>
-                    <button type="button" class="char-btn" onclick="insertChar('ɖ')">ɖ</button>
-                    <button type="button" class="char-btn" onclick="insertChar('ɣ')">ɣ</button>
-                    <button type="button" class="char-btn" onclick="insertChar('ɲ')">ɲ</button>
-                    <button type="button" class="char-btn" onclick="insertChar('Ɛ')">Ɛ</button>
-                    <button type="button" class="char-btn" onclick="insertChar('Ɔ')">Ɔ</button>
-                    <button type="button" class="char-btn" onclick="insertChar('Ɖ')">Ɖ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɛ')" title="Insérer ɛ">ɛ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɔ')" title="Insérer ɔ">ɔ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɖ')" title="Insérer ɖ">ɖ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɣ')" title="Insérer ɣ">ɣ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('ɲ')" title="Insérer ɲ">ɲ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('Ɛ')" title="Insérer Ɛ">Ɛ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('Ɔ')" title="Insérer Ɔ">Ɔ</button>
+                    <button type="button" class="char-btn" onclick="insertChar('Ɖ')" title="Insérer Ɖ">Ɖ</button>
                 </div>
 
-                <textarea id="inputText" placeholder="Taper une phrase en fon ici (ex: A ɖò ganji...)" autofocus></textarea>
+                <textarea id="inputText" placeholder="Saisissez votre texte en fongbé..." autofocus></textarea>
             </div>
 
             <div class="examples">
                 <span class="examples-title">Exemples :</span>
-                <span class="example-chip" onclick="setExample('A ɖò ganji')">A ɖò ganji (Ça va bien)</span>
-                <span class="example-chip" onclick="setExample('Un nyɔ́ nà we ǎ')">Un nyɔ́ nà we ǎ (Je n'aime pas)</span>
-                <span class="example-chip" onclick="setExample('Nùɖúɖú élɔ víví ɖeji')">Nùɖúɖú élɔ víví (Ce repas est délicieux)</span>
+                <div class="examples-grid">
+                    <button type="button" class="example-chip" data-text="A ɖò ganji" onclick="setExample(this.dataset.text)" title="Exemple Positif">
+                        <span class="dot dot-pos"></span>
+                        <span>A ɖò ganji</span>
+                        <span class="chip-fr">(Ça va bien)</span>
+                    </button>
+                    <button type="button" class="example-chip" data-text="Nùɖúɖú élɔ víví ɖeji" onclick="setExample(this.dataset.text)" title="Exemple Positif">
+                        <span class="dot dot-pos"></span>
+                        <span>Nùɖúɖú élɔ víví ɖeji</span>
+                        <span class="chip-fr">(Ce repas est délicieux)</span>
+                    </button>
+                    <button type="button" class="example-chip" data-text="Xwe nabi a ɖo?" onclick="setExample(this.dataset.text)" title="Exemple Neutre">
+                        <span class="dot dot-neu"></span>
+                        <span>Xwe nabi a ɖo?</span>
+                        <span class="chip-fr">(Quel âge as-tu ?)</span>
+                    </button>
+                    <button type="button" class="example-chip" data-text="sɔ̀ nù énɛ́ yì xwé" onclick="setExample(this.dataset.text)" title="Exemple Neutre">
+                        <span class="dot dot-neu"></span>
+                        <span>sɔ̀ nù énɛ́ yì xwé</span>
+                        <span class="chip-fr">(Remmène cela chez toi)</span>
+                    </button>
+                    <button type="button" class="example-chip" data-text="a nɔ bló nŭ gidigidì" onclick="setExample(this.dataset.text)" title="Exemple Négatif">
+                        <span class="dot dot-neg"></span>
+                        <span>a nɔ bló nŭ gidigidì</span>
+                        <span class="chip-fr">(Tu agis brutalement)</span>
+                    </button>
+                    <button type="button" class="example-chip" data-text="mɛ atɔn gble wu" onclick="setExample(this.dataset.text)" title="Exemple Négatif">
+                        <span class="dot dot-neg"></span>
+                        <span>mɛ atɔn gble wu</span>
+                        <span class="chip-fr">(Trois blessés)</span>
+                    </button>
+                </div>
             </div>
 
             <button id="btnPredict" class="btn-submit" onclick="predictSentiment()">
-                <span>Analyser le sentiment</span>
+                <span>Analyser</span>
             </button>
 
             <div id="errorMsg" class="error-msg"></div>
@@ -341,39 +477,43 @@
             <div id="resultContainer" class="result-container">
                 <div class="result-header">
                     <div id="sentimentBadge" class="sentiment-badge">
-                        <span id="badgeEmoji">😐</span>
+                        <span id="badgeDot" class="dot"></span>
                         <span id="badgeName">Neutre</span>
+                    </div>
+                    <div class="result-meta">
+                        <span id="confidenceTag" class="confidence-tag" title="Score après correction du biais vers Neutre (pas une probabilité brute)">Score : --%</span>
+                        <span id="activeModelTag" class="model-tag">Modèle : --</span>
                     </div>
                 </div>
 
                 <div class="probs-list">
                     <div class="prob-item">
                         <div class="prob-label-row">
-                            <span style="color: #64748b;">😐 Neutre</span>
-                            <span id="valNeutre" style="color: #475569;">0%</span>
-                        </div>
-                        <div class="prob-bar-bg">
-                            <div id="barNeutre" class="prob-bar-fill" style="width: 0%; background: #64748b;"></div>
-                        </div>
-                    </div>
-
-                    <div class="prob-item">
-                        <div class="prob-label-row">
-                            <span style="color: #dc2626;">🙁 Négatif</span>
-                            <span id="valNegatif" style="color: #dc2626;">0%</span>
-                        </div>
-                        <div class="prob-bar-bg">
-                            <div id="barNegatif" class="prob-bar-fill" style="width: 0%; background: #dc2626;"></div>
-                        </div>
-                    </div>
-
-                    <div class="prob-item">
-                        <div class="prob-label-row">
-                            <span style="color: #16a34a;">😊 Positif</span>
+                            <span style="color: #16a34a;">Positif</span>
                             <span id="valPositif" style="color: #16a34a;">0%</span>
                         </div>
                         <div class="prob-bar-bg">
                             <div id="barPositif" class="prob-bar-fill" style="width: 0%; background: #16a34a;"></div>
+                        </div>
+                    </div>
+
+                    <div class="prob-item">
+                        <div class="prob-label-row">
+                            <span style="color: #a16207;">Neutre</span>
+                            <span id="valNeutre" style="color: #a16207;">0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div id="barNeutre" class="prob-bar-fill" style="width: 0%; background: #eab308;"></div>
+                        </div>
+                    </div>
+
+                    <div class="prob-item">
+                        <div class="prob-label-row">
+                            <span style="color: #dc2626;">Négatif</span>
+                            <span id="valNegatif" style="color: #dc2626;">0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div id="barNegatif" class="prob-bar-fill" style="width: 0%; background: #dc2626;"></div>
                         </div>
                     </div>
                 </div>
@@ -382,6 +522,29 @@
     </div>
 
     <script>
+        async function loadAvailableModels() {
+            const select = document.getElementById('modelSelect');
+            try {
+                const res = await fetch('/api/models');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!Array.isArray(data.models) || data.models.length === 0) return;
+
+                select.innerHTML = '';
+                for (const m of data.models) {
+                    const option = document.createElement('option');
+                    option.value = m.key;
+                    option.textContent = `${m.label} (${m.accuracy})`;
+                    if (m.key === data.default_model) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                }
+            } catch (_) {
+                // Keep static fallback options if offline/unavailable
+            }
+        }
+
         function insertChar(char) {
             const textarea = document.getElementById('inputText');
             const start = textarea.selectionStart;
@@ -399,6 +562,7 @@
 
         async function predictSentiment() {
             const text = document.getElementById('inputText').value.trim();
+            const modelKey = document.getElementById('modelSelect').value;
             const btn = document.getElementById('btnPredict');
             const errorMsg = document.getElementById('errorMsg');
             const resultContainer = document.getElementById('resultContainer');
@@ -406,7 +570,7 @@
             errorMsg.style.display = 'none';
 
             if (!text) {
-                errorMsg.innerText = 'Veuillez saisir une phrase en fon.';
+                errorMsg.innerText = 'Veuillez saisir un texte en fon.';
                 errorMsg.style.display = 'block';
                 return;
             }
@@ -418,7 +582,7 @@
                 const response = await fetch('/api/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text })
+                    body: JSON.stringify({ text: text, model_key: modelKey })
                 });
 
                 const data = await response.json();
@@ -427,52 +591,68 @@
                     throw new Error(data.error || 'Erreur lors de la prédiction.');
                 }
 
-                // Mettre à jour l'affichage
                 const badge = document.getElementById('sentimentBadge');
-                document.getElementById('badgeEmoji').innerText = data.emoji;
+                const badgeDot = document.getElementById('badgeDot');
                 document.getElementById('badgeName').innerText = data.sentiment;
 
                 if (data.sentiment === 'Positif') {
                     badge.style.background = '#f0fdf4';
                     badge.style.color = '#16a34a';
                     badge.style.border = '1px solid #bbf7d0';
+                    badgeDot.style.background = '#16a34a';
                 } else if (data.sentiment === 'Négatif') {
                     badge.style.background = '#fef2f2';
                     badge.style.color = '#dc2626';
                     badge.style.border = '1px solid #fecaca';
+                    badgeDot.style.background = '#dc2626';
                 } else {
-                    badge.style.background = '#f8fafc';
-                    badge.style.color = '#475569';
-                    badge.style.border = '1px solid #cbd5e1';
+                    badge.style.background = '#fefce8';
+                    badge.style.color = '#a16207';
+                    badge.style.border = '1px solid #fde047';
+                    badgeDot.style.background = '#eab308';
                 }
 
-                // Probabilités
+                const confTag = document.getElementById('confidenceTag');
+                if (typeof data.confidence === 'number') {
+                    confTag.innerText = `Score : ${(data.confidence * 100).toFixed(1)}%`;
+                } else {
+                    confTag.innerText = 'Score : --';
+                }
+
+                document.getElementById('activeModelTag').innerText =
+                    `Modèle : ${data.model_label || modelKey}`;
+
                 if (data.probabilities) {
-                    const pNeu = (data.probabilities.Neutre * 100) || 0;
-                    const pNeg = (data.probabilities.Négatif * 100) || 0;
                     const pPos = (data.probabilities.Positif * 100) || 0;
+                    const pNeu = (data.probabilities.Neutre * 100) || 0;
+                    const pNeg = (data.probabilities['Négatif'] * 100) || 0;
+
+                    document.getElementById('valPositif').innerText = `${pPos.toFixed(1)}%`;
+                    document.getElementById('barPositif').style.width = `${pPos}%`;
 
                     document.getElementById('valNeutre').innerText = `${pNeu.toFixed(1)}%`;
                     document.getElementById('barNeutre').style.width = `${pNeu}%`;
 
                     document.getElementById('valNegatif').innerText = `${pNeg.toFixed(1)}%`;
                     document.getElementById('barNegatif').style.width = `${pNeg}%`;
-
-                    document.getElementById('valPositif').innerText = `${pPos.toFixed(1)}%`;
-                    document.getElementById('barPositif').style.width = `${pPos}%`;
                 }
 
                 resultContainer.style.display = 'block';
-
             } catch (err) {
                 errorMsg.innerText = err.message;
                 errorMsg.style.display = 'block';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<span>Analyser le sentiment</span>';
+                btn.innerHTML = '<span>Analyser</span>';
             }
         }
 
+        document.getElementById('modelSelect').addEventListener('change', function() {
+            const text = document.getElementById('inputText').value.trim();
+            if (text) {
+                predictSentiment();
+            }
+        });
 
         document.getElementById('inputText').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -480,6 +660,8 @@
                 predictSentiment();
             }
         });
+
+        document.addEventListener('DOMContentLoaded', loadAvailableModels);
     </script>
 </body>
 </html>
